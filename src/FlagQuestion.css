@@ -1,0 +1,12 @@
+.flag {
+  height: 65vh;
+  border: 1px solid black;
+  margin: 15px;
+}
+
+.flag-form {
+  display: flex;
+  max-width: 900px;
+  margin: 0 auto;
+  justify-content: space-around;
+}

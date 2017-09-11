@@ -1,0 +1,40 @@
+.App {
+  text-align: center;
+}
+
+.title-header {
+  display: flex;
+  background-image: url("/world.jpg");
+  height: 20vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.title-text {
+  font-size: 2.5em;
+  color: white;
+  text-shadow: 3px 3px 4px black; 
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
