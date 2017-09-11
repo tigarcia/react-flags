@@ -13,7 +13,8 @@ class CountryGame extends Component {
 
     this.state = {
       countries: [],
-      currentCountry: undefined,
+      options: [],
+      correctOption: undefined,
       gameState: undefined,
       flagLoading: true,
       correct: 0,
@@ -30,8 +31,14 @@ class CountryGame extends Component {
     fetch("https://restcountries.eu/rest/v2/all")
       .then(resp => resp.json())
       .then(countries => {
-        let currentCountry = Math.floor(Math.random() * countries.length);
-        this.setState({countries, currentCountry, gameState: this.GAME_STATES.QUESTION})
+        const correctOption = Math.floor(Math.random() * countries.length);
+        const options = this._getOptions(correctOption, countries);
+        this.setState({
+          countries,
+          correctOption,
+          options,
+          gameState: this.GAME_STATES.QUESTION
+        });
       })
       .catch(console.warn)
   }
@@ -45,52 +52,59 @@ class CountryGame extends Component {
   }
 
   onGuess(answer) {
-    const {currentCountry} = this.state;
-    let gameState = answer === currentCountry ?
+    const {correctOption} = this.state;
+    let gameState = answer === correctOption ?
                       this.GAME_STATES.ANSWER_CORRECT :
                       this.GAME_STATES.ANSWER_WRONG;
     this.setState({gameState});
   }
 
   nextQuestion() {
-    let currentCountry = Math.floor(Math.random() * this.state.countries.length);
-    this.setState({currentCountry, gameState: this.GAME_STATES.QUESTION, flagLoading: true})
+    const {countries} = this.state;
+    const correctOption = Math.floor(Math.random() * countries.length);
+    const options = this._getOptions(correctOption, countries);
+    this.setState({
+      correctOption,
+      options,
+      gameState: this.GAME_STATES.QUESTION,
+      flagLoading: true
+    });
   }
 
-  _getOptions() {
-    let options = [this.state.currentCountry];
+  _getOptions(correctOption, countries) {
+    let options = [correctOption];
     let tries = 0;
     while (options.length < 4 && tries < 15) {
-      let option = Math.floor(Math.random() * this.state.countries.length);
-      if (option !== this.state.currentCountry) {
+      let option = Math.floor(Math.random() * countries.length);
+      if (options.indexOf(option) === -1 ) {
         options.push(option);
       } else {
         tries++;
       }
     }
-    return shuffle(options.map(option => {
-      return {
-        id: option,
-        name: this.state.countries[option].name
-      };
-    }));
+    return shuffle(options);
   }
 
   render() {
-    let {countries, currentCountry, gameState, flagLoading} = this.state;
+    let {countries, correctOption, options, gameState, flagLoading} = this.state;
     const showForm = gameState === this.GAME_STATES.QUESTION;
     let output = <div>Loading...</div>;
-    if (currentCountry !== undefined) {
-      const {flag, name} = countries[currentCountry];
-      let options = this._getOptions();
+    if (correctOption !== undefined) {
+      const {flag, name} = countries[correctOption];
       output = [];
+      let opts = options.map(opt => {
+        return {
+          id: opt,
+          name: countries[opt].name
+        };
+      })
       if (flagLoading) {
         output.push(<FlagQuestion
                       key={1}
                       onGuess={this.onGuess}
                       handleLoad={this.handleLoad}
                       onError={this.handleLoadError}
-                      options={options}
+                      options={opts}
                       showForm={showForm}
                       flag={flag}
                       hideFlag={true}
@@ -100,7 +114,7 @@ class CountryGame extends Component {
         output.push(<FlagQuestion
                       key={1}
                       onGuess={this.onGuess}
-                      options={options}
+                      options={opts}
                       showForm={showForm}
                       flag={flag}
                       name={name} />);
