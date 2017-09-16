@@ -1,13 +1,24 @@
 import React, {Component} from 'react';
-import FlagChoices from './FlagChoices.js'
+import FlagChoices from './FlagChoices'
+import FlagAnswer from './FlagAnswer';
 import './FlagQuestion.css';
+
+const QuestionStates = {
+  QUESTION: 1,
+  ANSWER_WRONG: 2,
+  ANSWER_CORRECT: 3
+};
 
 
 class FlagQuestion extends Component {
+  static defaultProps = {
+    options: []
+  }
+
   constructor(props) {
     super(props);
     this.state = {
-      answer: undefined,
+      userChoice: undefined,
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -15,50 +26,48 @@ class FlagQuestion extends Component {
   }
 
   handleChange(e) {
-    this.setState({answer: Number(e.target.value)});
+    this.setState({userChoice: Number(e.target.value)});
   }
 
   handleSubmit(e) {
     e.preventDefault();
-    this.props.onGuess(this.state.answer);
+    this.props.onGuess(this.state.userChoice);
   }
 
   render() {
-    const {flag, showForm, options, handleLoad, hideFlag} = this.props;
-    const {answer} = this.state;
-    let form = undefined;
-    let opts = [];
-    if (options && options.length > 0) {
-      opts = options.map(opt => {
-        return {
-          ...opt,
-          checked: answer === opt.id ? true : false
-        }
-      });
-    }
-    if (showForm) {
-      form = <FlagChoices handleChange={this.handleChange}
-                          handleSubmit={this.handleSubmit}
-                          options={opts} />;
-    }
+    const {
+      flag,
+      questionState,
+      options,
+      answerText,
+      onNext
+    } = this.props;
+    const {userChoice} = this.state;
+    let opts = options.map(opt => ({
+      ...opt,
+      checked: userChoice === opt.id ? true : false
+    }));
+    let output = questionState === QuestionStates.QUESTION ?
+      (<FlagChoices handleChange={this.handleChange}
+                   handleSubmit={this.handleSubmit}
+                   options={opts} />) :
+      (<FlagAnswer
+        correct={questionState === QuestionStates.ANSWER_CORRECT}
+        answer={answerText}
+        onNext={onNext} />);
 
-    let styles = {};
-    if (hideFlag) {
-      styles.display = 'none';
-    }
     return (
       <div>
+        {output}
         <img
-           onLoad={handleLoad}
-           style={styles}
-           className="flag"
+           className="flag-img"
            src={flag}
            alt="Guess the flag"
          />
-        {form}
       </div>
     );
   }
 }
 
 export default FlagQuestion;
+export { QuestionStates };

@@ -1,4 +1,6 @@
 import React from 'react';
+import StyledButton from './StyledButton';
+import './FlagChoices.css';
 
 const FlagChoices =  props => {
   let options = props.options || []
@@ -17,7 +19,7 @@ const FlagChoices =  props => {
   return (
     <form className="flag-form" onSubmit={handleSubmit}>
       {inputs}
-      <button type="submit">GUESS</button>
+      <StyledButton text="GUESS" type="submit"/>
     </form>
   );
 }

@@ -1,30 +1,20 @@
 import React, {Component} from 'react';
-import FlagQuestion from './FlagQuestion.js';
+import FlagQuestion, {QuestionStates} from './FlagQuestion.js';
 import shuffle from 'shuffle-array';
 
 class CountryGame extends Component {
   constructor(props) {
     super(props);
-    this.GAME_STATES = {
-      QUESTION: 1,
-      ANSWER_WRONG: 2,
-      ANSWER_CORRECT: 3
-    }
 
     this.state = {
       countries: [],
       options: [],
       correctOption: undefined,
-      gameState: undefined,
-      flagLoading: true,
-      correct: 0,
-      incorrect: 0
+      questionState: undefined,
     }
 
     this.onGuess = this.onGuess.bind(this);
     this.nextQuestion = this.nextQuestion.bind(this);
-    this.handleLoad = this.handleLoad.bind(this);
-    this.handleLoadError = this.handleLoadError.bind(this);
   }
 
   componentDidMount() {
@@ -37,26 +27,18 @@ class CountryGame extends Component {
           countries,
           correctOption,
           options,
-          gameState: this.GAME_STATES.QUESTION
+          questionState: QuestionStates.QUESTION,
         });
       })
       .catch(console.warn)
   }
 
-  handleLoad() {
-    this.setState({flagLoading: false});
-  }
-
-  handleLoadError() {
-
-  }
-
   onGuess(answer) {
     const {correctOption} = this.state;
-    let gameState = answer === correctOption ?
-                      this.GAME_STATES.ANSWER_CORRECT :
-                      this.GAME_STATES.ANSWER_WRONG;
-    this.setState({gameState});
+    let questionState = answer === correctOption ?
+                        QuestionStates.ANSWER_CORRECT :
+                        QuestionStates.ANSWER_WRONG;
+    this.setState({questionState});
   }
 
   nextQuestion() {
@@ -66,8 +48,7 @@ class CountryGame extends Component {
     this.setState({
       correctOption,
       options,
-      gameState: this.GAME_STATES.QUESTION,
-      flagLoading: true
+      questionState: QuestionStates.QUESTION
     });
   }
 
@@ -86,58 +67,33 @@ class CountryGame extends Component {
   }
 
   render() {
-    let {countries, correctOption, options, gameState, flagLoading} = this.state;
-    const showForm = gameState === this.GAME_STATES.QUESTION;
+    let {
+      countries,
+      correctOption,
+      options,
+      questionState
+    } = this.state;
     let output = <div>Loading...</div>;
     if (correctOption !== undefined) {
       const {flag, name} = countries[correctOption];
-      output = [];
       let opts = options.map(opt => {
         return {
           id: opt,
           name: countries[opt].name
         };
-      })
-      if (flagLoading) {
-        output.push(<FlagQuestion
-                      key={1}
-                      onGuess={this.onGuess}
-                      handleLoad={this.handleLoad}
-                      onError={this.handleLoadError}
-                      options={opts}
-                      showForm={showForm}
-                      flag={flag}
-                      hideFlag={true}
-                      name={name} />);
-        output.push(<div key={10}>Loading...</div>)
-      } else {
-        output.push(<FlagQuestion
-                      key={1}
-                      onGuess={this.onGuess}
-                      options={opts}
-                      showForm={showForm}
-                      flag={flag}
-                      name={name} />);
-      }
-
-      if (!showForm) {
-        if (gameState === this.GAME_STATES.ANSWER_CORRECT) {
-          output.push(<div key={2}>
-            Correct!: {name}
-          </div>);
-        } else {
-          output.push(<div key={3}>
-            Incorrect! Correct Answer: {name}
-          </div>);
-        }
-        output.push(<button key={4} onClick={this.nextQuestion}>
-          NEXT
-        </button>);
-
-      }
+      });
+      output = (
+        <FlagQuestion
+          answerText={name}
+          onGuess={this.onGuess}
+          onNext={this.nextQuestion}
+          options={opts}
+          questionState={questionState}
+          flag={flag}/>
+      );
     }
     return (
-      <div>
+      <div style={{marginTop: '15px'}}>
         {output}
       </div>
     );
